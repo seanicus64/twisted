@@ -34,7 +34,7 @@ Test coverage needs to be better.
 <http://www.irchelp.org/irchelp/rfc/ctcpspec.html>}
 """
 
-import errno, os, random, re, stat, struct, sys, time, traceback
+import errno, os, random, re, stat, struct, sys, time, traceback, builtins
 import operator
 import string, socket
 import textwrap
@@ -406,7 +406,11 @@ class IRC(protocol.Protocol):
         on and off was not required.)
         """
         if isinstance(data, bytes):
-            data = data.decode("utf-8")
+            # random data containing invalid continuation bytes will crash the application
+            try:
+                data = data.decode("utf-8")
+            except builtins.UnicodeDecodeError:
+                return
         lines = (self.buffer + data).split(LF)
         # Put the (possibly empty) element after the last LF back in the
         # buffer
