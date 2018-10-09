@@ -406,7 +406,11 @@ class IRC(protocol.Protocol):
         on and off was not required.)
         """
         if isinstance(data, bytes):
-            data = data.decode("utf-8")
+            # utf-8 can't decode arbitrary data which may be sent by ant IRC user
+            try:
+                data = data.decode("utf-8")
+            except UnicodeDecodeError:
+                return
         lines = (self.buffer + data).split(LF)
         # Put the (possibly empty) element after the last LF back in the
         # buffer
